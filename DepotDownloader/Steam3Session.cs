@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using QRCoder;
 using SteamKit2;
 using SteamKit2.Authentication;
 using SteamKit2.CDN;
@@ -511,43 +510,6 @@ namespace DepotDownloader
                             return;
                         }
                     }
-                    else if (logonDetails.AccessToken is null && ContentDownloader.Config.UseQrCode)
-                    {
-                        Console.WriteLine("Logging in with QR code...");
-
-                        try
-                        {
-                            var session = await steamClient.Authentication.BeginAuthSessionViaQRAsync(new AuthSessionDetails
-                            {
-                                IsPersistentSession = ContentDownloader.Config.RememberPassword,
-                                Authenticator = new UserConsoleAuthenticator(),
-                            });
-
-                            authSession = session;
-
-                            // Steam will periodically refresh the challenge url, so we need a new QR code.
-                            session.ChallengeURLChanged = () =>
-                            {
-                                Console.WriteLine();
-                                Console.WriteLine("The QR code has changed:");
-
-                                DisplayQrCode(session.ChallengeURL);
-                            };
-
-                            // Draw initial QR code immediately
-                            DisplayQrCode(session.ChallengeURL);
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            return;
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine("Failed to authenticate with Steam: " + ex.Message);
-                            Abort(false);
-                            return;
-                        }
-                    }
                 }
 
                 if (authSession != null)
@@ -738,18 +700,6 @@ namespace DepotDownloader
                     PackageTokens.TryAdd(license.PackageID, license.AccessToken);
                 }
             }
-        }
-
-        private static void DisplayQrCode(string challengeUrl)
-        {
-            // Encode the link as a QR code
-            using var qrGenerator = new QRCodeGenerator();
-            var qrCodeData = qrGenerator.CreateQrCode(challengeUrl, QRCodeGenerator.ECCLevel.L);
-            using var qrCode = new AsciiQRCode(qrCodeData);
-            var qrCodeAsAsciiArt = qrCode.GetGraphic(1, drawQuietZones: false);
-
-            Console.WriteLine("Use the Steam Mobile App to sign in with this QR code:");
-            Console.WriteLine(qrCodeAsAsciiArt);
         }
     }
 }
