@@ -15,7 +15,7 @@ using SteamKit2.Internal;
 
 namespace DepotDownloader
 {
-    class Steam3Session
+    public class Steam3Session
     {
         public bool IsLoggedOn { get; private set; }
 

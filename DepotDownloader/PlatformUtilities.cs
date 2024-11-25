@@ -8,7 +8,7 @@ using System.Runtime.Versioning;
 
 namespace DepotDownloader
 {
-    static class PlatformUtilities
+    public static class PlatformUtilities
     {
         public static void SetExecutable(string path, bool value)
         {

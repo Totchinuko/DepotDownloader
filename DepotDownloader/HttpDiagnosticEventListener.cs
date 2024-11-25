@@ -7,7 +7,7 @@ using System.Text;
 
 namespace DepotDownloader
 {
-    internal sealed class HttpDiagnosticEventListener : EventListener
+    public sealed class HttpDiagnosticEventListener : EventListener
     {
         public const EventKeywords TasksFlowActivityIds = (EventKeywords)0x80;
 
