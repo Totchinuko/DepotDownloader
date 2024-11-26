@@ -591,58 +591,6 @@ namespace DepotDownloader
 
         private void LogOnCallback(SteamUser.LoggedOnCallback loggedOn)
         {
-            var isSteamGuard = loggedOn.Result == EResult.AccountLogonDenied;
-            var is2FA = loggedOn.Result == EResult.AccountLoginDeniedNeedTwoFactor;
-            var isAccessToken = ContentDownloader.Config.RememberPassword && logonDetails.AccessToken != null &&
-                loggedOn.Result is EResult.InvalidPassword
-                or EResult.InvalidSignature
-                or EResult.AccessDenied
-                or EResult.Expired
-                or EResult.Revoked;
-
-            if (isSteamGuard || is2FA || isAccessToken)
-            {
-                bExpectingDisconnectRemote = true;
-                Abort(false);
-
-                if (!isAccessToken)
-                {
-                    Console.WriteLine("This account is protected by Steam Guard.");
-                }
-
-                if (is2FA)
-                {
-                    do
-                    {
-                        Console.Write("Please enter your 2 factor auth code from your authenticator app: ");
-                        logonDetails.TwoFactorCode = Console.ReadLine();
-                    } while (string.Empty == logonDetails.TwoFactorCode);
-                }
-                else if (isAccessToken)
-                {
-                    AccountSettingsStore.Instance.LoginTokens.Remove(logonDetails.Username);
-                    AccountSettingsStore.Save();
-
-                    // TODO: Handle gracefully by falling back to password prompt?
-                    Console.WriteLine($"Access token was rejected ({loggedOn.Result}).");
-                    Abort(false);
-                    return;
-                }
-                else
-                {
-                    do
-                    {
-                        Console.Write("Please enter the authentication code sent to your email address: ");
-                        logonDetails.AuthCode = Console.ReadLine();
-                    } while (string.Empty == logonDetails.AuthCode);
-                }
-
-                Console.Write("Retrying Steam3 connection...");
-                Connect();
-
-                return;
-            }
-
             if (loggedOn.Result == EResult.TryAnotherCM)
             {
                 Util.Write("Retrying Steam3 connection (TryAnotherCM)...");
