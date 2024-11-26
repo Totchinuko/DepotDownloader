@@ -652,5 +652,39 @@ namespace DepotDownloader
                 }
             }
         }
+
+        #region Trebuchet Additions
+        public List<PublishedFileDetails> GetPublishedFileDetails(uint appId, IEnumerable<ulong> pubFiles)
+        {
+            var pubFileRequest = new CPublishedFile_GetDetails_Request { appid = appId };
+            pubFileRequest.publishedfileids.AddRange(pubFiles);
+            if (pubFileRequest.publishedfileids.Count == 0)
+                return new List<PublishedFileDetails>();
+
+            var completed = false;
+            var detailsList = new List<PublishedFileDetails>();
+
+            Action<SteamUnifiedMessages.ServiceMethodResponse> cbMethod = callback =>
+            {
+                completed = true;
+                if (callback.Result == EResult.OK)
+                {
+                    var response = callback.GetDeserializedResponse<CPublishedFile_GetDetails_Response>();
+                    detailsList.AddRange(response.publishedfiledetails);
+                }
+                else
+                {
+                    throw new Exception($"EResult {(int)callback.Result} ({callback.Result}) while retrieving file details for pubfiles ({string.Join(",", pubFiles)}).");
+                }
+            };
+
+            WaitUntilCallback(() =>
+            {
+                callbacks.Subscribe(steamPublishedFile.SendMessage(api => api.GetDetails(pubFileRequest)), cbMethod);
+            }, () => { return completed; });
+
+            return detailsList;
+        }
+        #endregion
     }
 }

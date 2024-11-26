@@ -1383,5 +1383,141 @@ namespace DepotDownloader
                 sw.WriteLine($"{file.TotalSize,14} {file.Chunks.Count,6} {sha1Hash} {file.Flags,5:D} {file.FileName}");
             }
         }
+
+        #region Trebuchet Additions
+        /// <summary>
+        /// Download a list of manifests handled UGC files.
+        /// </summary>
+        /// <param name="appId"></param>
+        /// <param name="publishedFiles"></param>
+        /// <param name="branch"></param>
+        /// <param name="cts"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        /// <exception cref="ContentDownloaderException"></exception>
+        public static async Task DownloadUGCAsync(IEnumerable<uint> apps, IEnumerable<ulong> publishedFiles, string branch, CancellationTokenSource cts)
+        {
+            if (string.IsNullOrWhiteSpace(Config.InstallDirectory))
+                throw new ArgumentNullException(nameof(Config.InstallDirectory));
+
+            var list = new List<SteamKit2.Internal.PublishedFileDetails>();
+
+            foreach (var appId in apps)
+            {
+                steam3.RequestAppInfo(appId);
+                if (!AccountHasAccess(appId))
+                {
+                    if (steam3.RequestFreeAppLicense(appId))
+                    {
+                        Util.Write("Obtained FreeOnDemand license for app {0}", appId);
+
+                        // Fetch app info again in case we didn't get it fully without a license.
+                        steam3.RequestAppInfo(appId, true);
+                    }
+                    else
+                    {
+                        var contentName = GetAppName(appId);
+                        throw new ContentDownloaderException(String.Format("App {0} ({1}) is not available from this account.", appId, contentName));
+                    }
+                }
+
+                list.AddRange(steam3.GetPublishedFileDetails(appId, publishedFiles));
+            }
+
+            if (list.Count == 0) return;
+            var depotManifestIds = list.Where(x => x.hcontent_file > 0).GroupBy(x => x.publishedfileid).Select(y => y.First()).Select(i => (i.consumer_appid, i.publishedfileid, i.hcontent_file)).ToList();
+
+            var hasSpecificDepots = depotManifestIds.Count > 0;
+            var depotIdsExpected = depotManifestIds.Select(x => x.consumer_appid).ToList();
+
+            if (depotManifestIds.Count == 0 && !hasSpecificDepots)
+            {
+                throw new ContentDownloaderException(String.Format("Couldn't find any depots to download for app {0}", string.Join(", ", apps)));
+            }
+
+            var infos = new List<DepotDownloadInfo>();
+
+            foreach (var depot in depotManifestIds)
+            {
+                if (!CreateUGCDirectories(depot.consumer_appid, depot.publishedfileid, out var installDir))
+                    throw new Exception("Unable to create install directories!");
+                if (TryGetDepotInfo(depot.consumer_appid, depot.consumer_appid, depot.hcontent_file, depot.publishedfileid, branch, installDir, out var info))
+                    infos.Add(info);
+            }
+
+            try
+            {
+                await DownloadSteam3Async(infos, cts).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                Util.Write("App {0} was not completely downloaded.", string.Join(", ", apps));
+                throw;
+            }
+        }
+
+
+        private static bool CreateUGCDirectories(uint appid, ulong publishedFileId, out string installDir)
+        {
+            if (string.IsNullOrWhiteSpace(Config.InstallDirectory))
+                throw new ArgumentNullException(nameof(Config.InstallDirectory));
+
+            installDir = null;
+            try
+            {
+                installDir = Path.Combine(Config.InstallDirectory, appid.ToString(), publishedFileId.ToString());
+                Directory.CreateDirectory(installDir);
+                Directory.CreateDirectory(Path.Combine(installDir, STAGING_DIR));
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool TryGetDepotInfo(uint depotId, uint appId, ulong manifestId, ulong publishedFileId, string branch, string installDir, out DepotDownloadInfo? info)
+        {
+            if (appId != INVALID_APP_ID)
+                steam3.RequestAppInfo(appId);
+
+            info = null;
+            if (!AccountHasAccess(depotId))
+            {
+                Util.Write("Depot not available from this account.");
+                return false;
+            }
+
+            if (manifestId == INVALID_MANIFEST_ID)
+            {
+                manifestId = GetSteam3DepotManifest(depotId, appId, branch);
+                if (manifestId == INVALID_MANIFEST_ID && !string.Equals(branch, DEFAULT_BRANCH, StringComparison.OrdinalIgnoreCase))
+                {
+                    Util.Write("Depot {0} does not have branch named \"{1}\". Trying {2} branch.", depotId, branch, DEFAULT_BRANCH);
+                    branch = DEFAULT_BRANCH;
+                    manifestId = GetSteam3DepotManifest(depotId, appId, branch);
+                }
+
+                if (manifestId == INVALID_MANIFEST_ID)
+                {
+                    Util.Write("Depot {0} missing public subsection or manifest section.", depotId);
+                    return false;
+                }
+            }
+
+            steam3.RequestDepotKey(depotId, appId);
+            if (!steam3.DepotKeys.ContainsKey(depotId))
+            {
+                Util.Write("No valid depot key for {0}, unable to download.", depotId);
+                return false;
+            }
+
+            var depotKey = steam3.DepotKeys[depotId];
+
+            info = new DepotDownloadInfo(depotId, appId, manifestId, branch, installDir, depotKey, publishedFileId);
+            return true;
+        }
+        #endregion
     }
 }
