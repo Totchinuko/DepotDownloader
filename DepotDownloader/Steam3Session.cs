@@ -54,6 +54,9 @@ namespace DepotDownloader
         DateTime connectTime;
         AuthSession authSession;
 
+        public event EventHandler Disconnected;
+        public event EventHandler Connected;
+
         // input
         readonly SteamUser.LogOnDetails logonDetails;
 
@@ -563,11 +566,13 @@ namespace DepotDownloader
                 Util.WriteLine("Disconnected from Steam");
 
                 // Any operations outstanding need to be aborted
+                Disconnected?.Invoke(this, EventArgs.Empty);
                 bAborted = true;
             }
             else if (connectionBackoff >= 10)
             {
                 Util.WriteLine("Could not connect to Steam after 10 tries");
+                Disconnected?.Invoke(this, EventArgs.Empty);
                 Abort(false);
             }
             else if (!bAborted)
@@ -620,6 +625,7 @@ namespace DepotDownloader
 
             this.seq++;
             IsLoggedOn = true;
+            Connected?.Invoke(this, EventArgs.Empty);
 
             if (ContentDownloader.Config.CellID == 0)
             {
