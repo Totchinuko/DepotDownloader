@@ -106,7 +106,7 @@ namespace DepotDownloader
             return false;
         }
 
-        static bool AccountHasAccess(uint depotId)
+        public static bool AccountHasAccess(uint depotId)
         {
             if (steam3 == null || steam3.steamUser.SteamID == null || (steam3.Licenses == null && steam3.steamUser.SteamID.AccountType != EAccountType.AnonUser))
                 return false;
@@ -138,7 +138,7 @@ namespace DepotDownloader
             return false;
         }
 
-        internal static KeyValue GetSteam3AppSection(uint appId, EAppInfoSection section)
+        public static KeyValue GetSteam3AppSection(uint appId, EAppInfoSection section)
         {
             if (steam3 == null || steam3.AppInfo == null)
             {
@@ -163,7 +163,7 @@ namespace DepotDownloader
             return section_kv;
         }
 
-        static uint GetSteam3AppBuildNumber(uint appId, string branch)
+        public static uint GetSteam3AppBuildNumber(uint appId, string branch)
         {
             if (appId == INVALID_APP_ID)
                 return 0;
@@ -184,7 +184,7 @@ namespace DepotDownloader
             return uint.Parse(buildid.Value);
         }
 
-        static ulong GetSteam3DepotManifest(uint depotId, uint appId, string branch)
+        public static ulong GetSteam3DepotManifest(uint depotId, uint appId, string branch)
         {
             var depots = GetSteam3AppSection(appId, EAppInfoSection.Depots);
             var depotChild = depots[depotId.ToString()];
@@ -265,7 +265,7 @@ namespace DepotDownloader
             return ulong.Parse(node.Value);
         }
 
-        static string GetAppName(uint appId)
+        public static string GetAppName(uint appId)
         {
             var info = GetSteam3AppSection(appId, EAppInfoSection.Common);
             if (info == null)
