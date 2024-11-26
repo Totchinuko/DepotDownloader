@@ -102,7 +102,7 @@ namespace DepotDownloader
             IEnumerable<uint> licenseQuery;
             if (steam3.steamUser.SteamID.AccountType == EAccountType.AnonUser)
             {
-                licenseQuery = [17906];
+                licenseQuery = [17906, 0];
             }
             else
             {
