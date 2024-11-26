@@ -15,6 +15,9 @@ namespace DepotDownloader
         [ProtoMember(1)]
         public Dictionary<uint, ulong> InstalledManifestIDs { get; private set; }
 
+        [ProtoMember(2)]
+        public Dictionary<ulong, ulong> InstalledUGCManifestIDs { get; } = new Dictionary<ulong, ulong>();
+
         string FileName;
 
         DepotConfigStore()

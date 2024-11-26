@@ -37,11 +37,12 @@ namespace DepotDownloader
 
         private sealed class DepotDownloadInfo(
             uint depotid, uint appId, ulong manifestId, string branch,
-            string installDir, byte[] depotKey)
+            string installDir, byte[] depotKey, ulong publishedFileId = 0)
         {
             public uint DepotId { get; } = depotid;
             public uint AppId { get; } = appId;
             public ulong ManifestId { get; } = manifestId;
+            public ulong PublishedFileId { get; } = publishedFileId;
             public string Branch { get; } = branch;
             public string InstallDir { get; } = installDir;
             public byte[] DepotKey { get; } = depotKey;
