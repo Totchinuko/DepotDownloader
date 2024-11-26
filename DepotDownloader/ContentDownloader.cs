@@ -51,30 +51,16 @@ namespace DepotDownloader
         static bool CreateDirectories(uint depotId, uint depotVersion, out string installDir)
         {
             installDir = null;
+            if (string.IsNullOrWhiteSpace(Config.InstallDirectory))
+                return false;
             try
             {
-                if (string.IsNullOrWhiteSpace(Config.InstallDirectory))
-                {
-                    Directory.CreateDirectory(DEFAULT_DOWNLOAD_DIR);
+                Directory.CreateDirectory(Config.InstallDirectory);
 
-                    var depotPath = Path.Combine(DEFAULT_DOWNLOAD_DIR, depotId.ToString());
-                    Directory.CreateDirectory(depotPath);
+                installDir = Config.InstallDirectory;
 
-                    installDir = Path.Combine(depotPath, depotVersion.ToString());
-                    Directory.CreateDirectory(installDir);
-
-                    Directory.CreateDirectory(Path.Combine(installDir, CONFIG_DIR));
-                    Directory.CreateDirectory(Path.Combine(installDir, STAGING_DIR));
-                }
-                else
-                {
-                    Directory.CreateDirectory(Config.InstallDirectory);
-
-                    installDir = Config.InstallDirectory;
-
-                    Directory.CreateDirectory(Path.Combine(installDir, CONFIG_DIR));
-                    Directory.CreateDirectory(Path.Combine(installDir, STAGING_DIR));
-                }
+                Directory.CreateDirectory(Path.Combine(installDir, CONFIG_DIR));
+                Directory.CreateDirectory(Path.Combine(installDir, STAGING_DIR));
             }
             catch
             {
