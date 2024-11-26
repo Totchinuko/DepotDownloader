@@ -224,13 +224,6 @@ namespace DepotDownloader
                 var node_encrypted = manifests_encrypted[branch];
                 if (node_encrypted != KeyValue.Invalid)
                 {
-                    var password = Config.BetaPassword;
-                    while (string.IsNullOrEmpty(password))
-                    {
-                        Util.Write("Please enter the password for branch {0}: ", branch);
-                        Config.BetaPassword = password = Console.ReadLine();
-                    }
-
                     var encrypted_gid = node_encrypted["gid"];
 
                     if (encrypted_gid != KeyValue.Invalid)
