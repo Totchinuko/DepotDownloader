@@ -1474,7 +1474,7 @@ namespace DepotDownloader
             return true;
         }
 
-        private static bool TryGetDepotInfo(uint depotId, uint appId, ulong manifestId, ulong publishedFileId, string branch, string installDir, out DepotDownloadInfo? info)
+        private static bool TryGetDepotInfo(uint depotId, uint appId, ulong manifestId, ulong publishedFileId, string branch, string installDir, out DepotDownloadInfo info)
         {
             if (appId != INVALID_APP_ID)
                 steam3.RequestAppInfo(appId);
