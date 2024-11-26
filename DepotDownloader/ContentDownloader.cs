@@ -669,10 +669,18 @@ namespace DepotDownloader
             var configDir = Path.Combine(depot.InstallDir, CONFIG_DIR);
 
             var lastManifestId = INVALID_MANIFEST_ID;
-            DepotConfigStore.Instance.InstalledManifestIDs.TryGetValue(depot.DepotId, out lastManifestId);
-
-            // In case we have an early exit, this will force equiv of verifyall next run.
-            DepotConfigStore.Instance.InstalledManifestIDs[depot.DepotId] = INVALID_MANIFEST_ID;
+            if (depot.PublishedFileId == 0)
+            {
+                DepotConfigStore.Instance.InstalledManifestIDs.TryGetValue(depot.DepotId, out lastManifestId);
+                // In case we have an early exit, this will force equiv of verifyall next run.
+                DepotConfigStore.Instance.InstalledManifestIDs[depot.DepotId] = INVALID_MANIFEST_ID;
+            }
+            else
+            {
+                DepotConfigStore.Instance.InstalledUGCManifestIDs.TryGetValue(depot.PublishedFileId, out lastManifestId);
+                // In case we have an early exit, this will force equiv of verifyall next run.
+                DepotConfigStore.Instance.InstalledUGCManifestIDs[depot.PublishedFileId] = INVALID_MANIFEST_ID;
+            }
             DepotConfigStore.Save();
 
             if (lastManifestId != INVALID_MANIFEST_ID)
@@ -966,7 +974,10 @@ namespace DepotDownloader
                 }
             }
 
-            DepotConfigStore.Instance.InstalledManifestIDs[depot.DepotId] = depot.ManifestId;
+            if (depot.PublishedFileId == 0)
+                DepotConfigStore.Instance.InstalledManifestIDs[depot.DepotId] = depot.ManifestId;
+            else
+                DepotConfigStore.Instance.InstalledUGCManifestIDs[depot.PublishedFileId] = depot.ManifestId;
             DepotConfigStore.Save();
 
             Util.WriteLine("Depot {0} - Downloaded {1} bytes ({2} bytes uncompressed)", depot.DepotId, depotCounter.depotBytesCompressed, depotCounter.depotBytesUncompressed);
