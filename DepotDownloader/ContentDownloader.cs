@@ -603,7 +603,8 @@ namespace DepotDownloader
 
         private static async Task DownloadSteam3Async(List<DepotDownloadInfo> depots, CancellationTokenSource providedCTS = null)
         {
-            //TODO - Progress intermediate
+            //TODO: Progress intermediate
+            Config.Progress.Report(0.0);
             CancellationTokenSource cts;
             if (providedCTS != null)
                 cts = providedCTS;
@@ -650,8 +651,8 @@ namespace DepotDownloader
                 await DownloadSteam3AsyncDepotFiles(cts, downloadCounter, depotFileData, allFileNamesAllDepots);
             }
 
-            //TODO - Progress Hidden
-
+            //TODO: Progress Hidden
+            Config.Progress.Report(1.0);
             Util.WriteLine("Total downloaded: {0} bytes ({1} bytes uncompressed) from {2} depots",
                 downloadCounter.totalBytesCompressed, downloadCounter.totalBytesUncompressed, depots.Count);
         }
@@ -1327,7 +1328,8 @@ namespace DepotDownloader
                 downloadCounter.totalBytesCompressed += chunk.CompressedLength;
                 downloadCounter.totalBytesUncompressed += chunk.UncompressedLength;
 
-                //TODO - Ansi.Progress(downloadCounter.totalBytesUncompressed, downloadCounter.completeDownloadSize);
+                //TODO: Ansi.Progress(downloadCounter.totalBytesUncompressed, downloadCounter.completeDownloadSize);
+                Config.Progress.Report(Math.Round(downloadCounter.totalBytesUncompressed / (double)downloadCounter.completeDownloadSize * 100.0));
             }
 
             if (remainingChunks == 0)

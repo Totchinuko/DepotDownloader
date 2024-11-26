@@ -434,7 +434,7 @@ namespace DepotDownloader
             bIsConnectionRecovery = false;
             steamClient.Disconnect();
 
-            //TODO - Hide progress
+            //TODO: Hide progress
 
             // flush callbacks until our disconnected event
             while (!bDidDisconnect)
