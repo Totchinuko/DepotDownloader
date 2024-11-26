@@ -29,7 +29,5 @@ namespace DepotDownloader
 
         // A Steam LoginID to allow multiple concurrent connections
         public uint? LoginID { get; set; }
-
-        public bool UseQrCode { get; set; }
     }
 }

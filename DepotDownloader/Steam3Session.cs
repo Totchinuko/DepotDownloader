@@ -63,7 +63,7 @@ namespace DepotDownloader
         public Steam3Session(SteamUser.LogOnDetails details)
         {
             this.logonDetails = details;
-            this.authenticatedUser = details.Username != null || ContentDownloader.Config.UseQrCode;
+            this.authenticatedUser = details.Username != null;
 
             var clientConfiguration = SteamConfiguration.Create(config =>
                 config
