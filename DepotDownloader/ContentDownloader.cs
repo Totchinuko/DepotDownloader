@@ -1432,8 +1432,12 @@ namespace DepotDownloader
                 throw new ContentDownloaderException($"Couldn't find any depots to download for app {string.Join(", ", apps)}");
             }
 
-            var infos = new List<DepotDownloadInfo>();
+            cdnPool = new CDNClientPool(steam3, apps.ToList());
+            // Load our configuration data containing the depots currently installed
+            Directory.CreateDirectory(Path.Combine(Config.InstallDirectory, CONFIG_DIR));
+            DepotConfigStore.LoadFromFile(Path.Combine(Config.InstallDirectory, CONFIG_DIR, DEPOT_CONFIG));
 
+            var infos = new List<DepotDownloadInfo>();
             foreach (var (consumer_appid, publishedfileid, hcontent_file) in depotManifestIds)
             {
                 if (!CreateUGCDirectories(consumer_appid, publishedfileid, out var installDir))
