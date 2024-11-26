@@ -31,9 +31,10 @@ namespace DepotDownloader
         private static Steam3Session steam3;
         private static CDNClientPool cdnPool;
 
-        private const string DEFAULT_DOWNLOAD_DIR = "depots";
-        private const string CONFIG_DIR = ".DepotDownloader";
-        private static readonly string STAGING_DIR = Path.Combine(CONFIG_DIR, "staging");
+        public const string DEFAULT_DOWNLOAD_DIR = "depots";
+        public const string CONFIG_DIR = ".DepotDownloader";
+        public const string DEPOT_CONFIG = "depot.config";
+        public static readonly string STAGING_DIR = Path.Combine(CONFIG_DIR, "staging");
 
         private sealed class DepotDownloadInfo(
             uint depotid, uint appId, ulong manifestId, string branch,
@@ -382,7 +383,7 @@ namespace DepotDownloader
             }
 
             Directory.CreateDirectory(Path.Combine(configPath, CONFIG_DIR));
-            DepotConfigStore.LoadFromFile(Path.Combine(configPath, CONFIG_DIR, "depot.config"));
+            DepotConfigStore.LoadFromFile(Path.Combine(configPath, CONFIG_DIR, DEPOT_CONFIG));
 
             steam3?.RequestAppInfo(appId);
 
