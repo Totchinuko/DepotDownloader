@@ -979,8 +979,6 @@ namespace DepotDownloader
             else
                 DepotConfigStore.Instance.InstalledUGCManifestIDs[depot.PublishedFileId] = depot.ManifestId;
             DepotConfigStore.Save();
-
-            Util.WriteLine("Depot {0} - Downloaded {1} bytes ({2} bytes uncompressed)", depot.DepotId, depotCounter.depotBytesCompressed, depotCounter.depotBytesUncompressed);
         }
 
         private static void DownloadSteam3AsyncDepotFile(
