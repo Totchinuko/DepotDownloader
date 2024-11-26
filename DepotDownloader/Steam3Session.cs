@@ -400,7 +400,7 @@ namespace DepotDownloader
             bIsConnectionRecovery = false;
         }
 
-        public void Connect()
+        public async Task<bool> Connect()
         {
             bAborted = false;
             bConnected = false;
@@ -412,6 +412,8 @@ namespace DepotDownloader
 
             this.connectTime = DateTime.Now;
             this.steamClient.Connect();
+
+            return await Task.Run(() => WaitForCredentials());
         }
 
         private void Abort(bool sendLogOff = true)

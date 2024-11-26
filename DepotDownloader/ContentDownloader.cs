@@ -281,12 +281,6 @@ namespace DepotDownloader
                 }
             );
 
-            if (!steam3.WaitForCredentials())
-            {
-                Util.WriteLine("Unable to get steam3 credentials.");
-                return null;
-            }
-
             return steam3;
         }
 
