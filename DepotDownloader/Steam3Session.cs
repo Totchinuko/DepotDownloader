@@ -403,7 +403,7 @@ namespace DepotDownloader
             bIsConnectionRecovery = false;
         }
 
-        void Connect()
+        public void Connect()
         {
             bAborted = false;
             bConnected = false;
