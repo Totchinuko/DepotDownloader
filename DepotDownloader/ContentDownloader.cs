@@ -274,7 +274,7 @@ namespace DepotDownloader
             return info["name"].AsString();
         }
 
-        public static bool InitializeSteam3(string username, string password)
+        public static Steam3Session InitializeSteam3(string username, string password)
         {
             string loginToken = null;
 
@@ -297,10 +297,10 @@ namespace DepotDownloader
             if (!steam3.WaitForCredentials())
             {
                 Util.WriteLine("Unable to get steam3 credentials.");
-                return false;
+                return null;
             }
 
-            return true;
+            return steam3;
         }
 
         public static void ShutdownSteam3()
