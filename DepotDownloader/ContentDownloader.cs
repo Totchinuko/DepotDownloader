@@ -607,11 +607,15 @@ namespace DepotDownloader
             public ulong depotBytesUncompressed;
         }
 
-        private static async Task DownloadSteam3Async(List<DepotDownloadInfo> depots)
+        private static async Task DownloadSteam3Async(List<DepotDownloadInfo> depots, CancellationTokenSource providedCTS = null)
         {
             //TODO - Progress intermediate
+            CancellationTokenSource cts;
+            if (providedCTS != null)
+                cts = providedCTS;
+            else
+                cts = new CancellationTokenSource();
 
-            var cts = new CancellationTokenSource();
             cdnPool.ExhaustedToken = cts;
 
             var downloadCounter = new GlobalDownloadCounter();
