@@ -26,7 +26,7 @@ namespace DepotDownloader
         public const ulong INVALID_MANIFEST_ID = ulong.MaxValue;
         public const string DEFAULT_BRANCH = "public";
 
-        public static DownloadConfig Config = new();
+        public static readonly DownloadConfig Config = new();
 
         private static Steam3Session steam3;
         private static CDNClientPool cdnPool;
@@ -1395,7 +1395,7 @@ namespace DepotDownloader
         public static async Task DownloadUGCAsync(IEnumerable<uint> apps, IEnumerable<ulong> publishedFiles, string branch, CancellationTokenSource cts)
         {
             if (string.IsNullOrWhiteSpace(Config.InstallDirectory))
-                throw new ArgumentNullException(nameof(Config.InstallDirectory));
+                throw new Exception("InstalDirectory is not set");
 
             var list = new List<SteamKit2.Internal.PublishedFileDetails>();
 
@@ -1414,7 +1414,7 @@ namespace DepotDownloader
                     else
                     {
                         var contentName = GetAppName(appId);
-                        throw new ContentDownloaderException(String.Format("App {0} ({1}) is not available from this account.", appId, contentName));
+                        throw new ContentDownloaderException($"App {appId} ({contentName}) is not available from this account.");
                     }
                 }
 
@@ -1429,16 +1429,16 @@ namespace DepotDownloader
 
             if (depotManifestIds.Count == 0 && !hasSpecificDepots)
             {
-                throw new ContentDownloaderException(String.Format("Couldn't find any depots to download for app {0}", string.Join(", ", apps)));
+                throw new ContentDownloaderException($"Couldn't find any depots to download for app {string.Join(", ", apps)}");
             }
 
             var infos = new List<DepotDownloadInfo>();
 
-            foreach (var depot in depotManifestIds)
+            foreach (var (consumer_appid, publishedfileid, hcontent_file) in depotManifestIds)
             {
-                if (!CreateUGCDirectories(depot.consumer_appid, depot.publishedfileid, out var installDir))
+                if (!CreateUGCDirectories(consumer_appid, publishedfileid, out var installDir))
                     throw new Exception("Unable to create install directories!");
-                if (TryGetDepotInfo(depot.consumer_appid, depot.consumer_appid, depot.hcontent_file, depot.publishedfileid, branch, installDir, out var info))
+                if (TryGetDepotInfo(consumer_appid, consumer_appid, hcontent_file, publishedfileid, branch, installDir, out var info))
                     infos.Add(info);
             }
 
@@ -1457,7 +1457,7 @@ namespace DepotDownloader
         private static bool CreateUGCDirectories(uint appid, ulong publishedFileId, out string installDir)
         {
             if (string.IsNullOrWhiteSpace(Config.InstallDirectory))
-                throw new ArgumentNullException(nameof(Config.InstallDirectory));
+                throw new Exception("InstallDirectory is not set");
 
             installDir = null;
             try
@@ -1504,13 +1504,11 @@ namespace DepotDownloader
             }
 
             steam3.RequestDepotKey(depotId, appId);
-            if (!steam3.DepotKeys.ContainsKey(depotId))
+            if (!steam3.DepotKeys.TryGetValue(depotId, out var depotKey))
             {
                 Util.Write("No valid depot key for {0}, unable to download.", depotId);
                 return false;
             }
-
-            var depotKey = steam3.DepotKeys[depotId];
 
             info = new DepotDownloadInfo(depotId, appId, manifestId, branch, installDir, depotKey, publishedFileId);
             return true;
