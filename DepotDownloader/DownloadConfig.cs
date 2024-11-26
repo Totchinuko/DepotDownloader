@@ -14,6 +14,7 @@ namespace DepotDownloader
         public bool DownloadAllLanguages { get; set; }
         public bool DownloadManifestOnly { get; set; }
         public string InstallDirectory { get; set; }
+        public string DepotConfigDirectory { get; set; }
 
         public bool UsingFileList { get; set; }
         public HashSet<string> FilesToDownload { get; set; }

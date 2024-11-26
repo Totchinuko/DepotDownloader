@@ -34,7 +34,7 @@ namespace DepotDownloader
         public const string DEFAULT_DOWNLOAD_DIR = "depots";
         public const string CONFIG_DIR = ".DepotDownloader";
         public const string DEPOT_CONFIG = "depot.config";
-        public static readonly string STAGING_DIR = Path.Combine(CONFIG_DIR, "staging");
+        public const string STAGING_DIR = "staging";
 
         private sealed class DepotDownloadInfo(
             uint depotid, uint appId, ulong manifestId, string branch,
@@ -49,19 +49,20 @@ namespace DepotDownloader
             public byte[] DepotKey { get; } = depotKey;
         }
 
-        static bool CreateDirectories(uint depotId, uint depotVersion, out string installDir)
+        static bool CreateDirectories(out string installDir)
         {
             installDir = null;
             if (string.IsNullOrWhiteSpace(Config.InstallDirectory))
-                return false;
+                throw new Exception("Config.InstallDirectory is not set");
+            if (string.IsNullOrWhiteSpace(Config.DepotConfigDirectory))
+                throw new Exception("Config.DepotConfigDirectory is not set");
             try
             {
                 Directory.CreateDirectory(Config.InstallDirectory);
-
                 installDir = Config.InstallDirectory;
 
-                Directory.CreateDirectory(Path.Combine(installDir, CONFIG_DIR));
-                Directory.CreateDirectory(Path.Combine(installDir, STAGING_DIR));
+                Directory.CreateDirectory(Path.Combine(Config.DepotConfigDirectory));
+                Directory.CreateDirectory(Path.Combine(Config.DepotConfigDirectory, STAGING_DIR));
             }
             catch
             {
@@ -342,13 +343,13 @@ namespace DepotDownloader
 
         private static async Task DownloadWebFile(uint appId, string fileName, string url)
         {
-            if (!CreateDirectories(appId, 0, out var installDir))
+            if (!CreateDirectories(out var installDir))
             {
                 Util.WriteLine("Error: Unable to create install directories!");
                 return;
             }
 
-            var stagingDir = Path.Combine(installDir, STAGING_DIR);
+            var stagingDir = Path.Combine(Config.DepotConfigDirectory, STAGING_DIR);
             var fileStagingPath = Path.Combine(stagingDir, fileName);
             var fileFinalPath = Path.Combine(installDir, fileName);
 
@@ -376,14 +377,11 @@ namespace DepotDownloader
             cdnPool = new CDNClientPool(steam3, [appId]);
 
             // Load our configuration data containing the depots currently installed
-            var configPath = Config.InstallDirectory;
-            if (string.IsNullOrWhiteSpace(configPath))
-            {
-                configPath = DEFAULT_DOWNLOAD_DIR;
-            }
+            if (string.IsNullOrWhiteSpace(Config.DepotConfigDirectory))
+                throw new Exception("Config directory is not set");
 
-            Directory.CreateDirectory(Path.Combine(configPath, CONFIG_DIR));
-            DepotConfigStore.LoadFromFile(Path.Combine(configPath, CONFIG_DIR, DEPOT_CONFIG));
+            Directory.CreateDirectory(Path.Combine(Config.DepotConfigDirectory));
+            DepotConfigStore.LoadFromFile(Path.Combine(Config.DepotConfigDirectory, DEPOT_CONFIG));
 
             steam3?.RequestAppInfo(appId);
 
@@ -554,7 +552,7 @@ namespace DepotDownloader
 
             var uVersion = GetSteam3AppBuildNumber(appId, branch);
 
-            if (!CreateDirectories(depotId, uVersion, out var installDir))
+            if (!CreateDirectories(out var installDir))
             {
                 Util.WriteLine("Error: Unable to create install directories!");
                 return null;
@@ -660,13 +658,16 @@ namespace DepotDownloader
 
         private static async Task<DepotFilesData> ProcessDepotManifestAndFiles(CancellationTokenSource cts, DepotDownloadInfo depot, GlobalDownloadCounter downloadCounter)
         {
+            if (string.IsNullOrEmpty(Config.DepotConfigDirectory))
+                throw new Exception("DepotConfigDirectory is not set");
+
             var depotCounter = new DepotDownloadCounter();
 
             Util.WriteLine("Processing depot {0}", depot.DepotId);
 
             ProtoManifest oldProtoManifest = null;
             ProtoManifest newProtoManifest = null;
-            var configDir = Path.Combine(depot.InstallDir, CONFIG_DIR);
+            var configDir = Config.DepotConfigDirectory;
 
             var lastManifestId = INVALID_MANIFEST_ID;
             if (depot.PublishedFileId == 0)
@@ -880,7 +881,7 @@ namespace DepotDownloader
                 return null;
             }
 
-            var stagingDir = Path.Combine(depot.InstallDir, STAGING_DIR);
+            var stagingDir = Path.Combine(Config.DepotConfigDirectory, STAGING_DIR);
 
             var filesAfterExclusions = newProtoManifest.Files.AsParallel().Where(f => TestIsFileIncluded(f.FileName)).ToList();
             var allFileNames = new HashSet<string>(filesAfterExclusions.Count);
@@ -1443,8 +1444,8 @@ namespace DepotDownloader
 
             cdnPool = new CDNClientPool(steam3, apps.ToList());
             // Load our configuration data containing the depots currently installed
-            Directory.CreateDirectory(Path.Combine(Config.InstallDirectory, CONFIG_DIR));
-            DepotConfigStore.LoadFromFile(Path.Combine(Config.InstallDirectory, CONFIG_DIR, DEPOT_CONFIG));
+            Directory.CreateDirectory(Path.Combine(Config.DepotConfigDirectory));
+            DepotConfigStore.LoadFromFile(Path.Combine(Config.DepotConfigDirectory, DEPOT_CONFIG));
 
             var infos = new List<DepotDownloadInfo>();
             foreach (var (consumer_appid, publishedfileid, hcontent_file) in depotManifestIds)
@@ -1471,13 +1472,15 @@ namespace DepotDownloader
         {
             if (string.IsNullOrWhiteSpace(Config.InstallDirectory))
                 throw new Exception("InstallDirectory is not set");
+            if (string.IsNullOrWhiteSpace(Config.DepotConfigDirectory))
+                throw new Exception("DepotConfigDirectory is not set");
 
             installDir = null;
             try
             {
                 installDir = Path.Combine(Config.InstallDirectory, appid.ToString(), publishedFileId.ToString());
                 Directory.CreateDirectory(installDir);
-                Directory.CreateDirectory(Path.Combine(installDir, STAGING_DIR));
+                Directory.CreateDirectory(Path.Combine(Config.DepotConfigDirectory, STAGING_DIR));
             }
             catch
             {
