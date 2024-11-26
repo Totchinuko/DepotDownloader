@@ -34,21 +34,27 @@ namespace DepotDownloader
 
         public static void LoadFromFile(string filename)
         {
-            if (Loaded)
+            if (Instance != null)
                 throw new Exception("Config already loaded");
+            Instance = LoadInstanceFromFile(filename);
+        }
 
+        public static DepotConfigStore LoadInstanceFromFile(string filename)
+        {
+            DepotConfigStore DepotConfigStore;
             if (File.Exists(filename))
             {
                 using var fs = File.Open(filename, FileMode.Open);
                 using var ds = new DeflateStream(fs, CompressionMode.Decompress);
-                Instance = Serializer.Deserialize<DepotConfigStore>(ds);
+                DepotConfigStore = Serializer.Deserialize<DepotConfigStore>(ds);
             }
             else
             {
-                Instance = new DepotConfigStore();
+                DepotConfigStore = new DepotConfigStore();
             }
 
-            Instance.FileName = filename;
+            DepotConfigStore.FileName = filename;
+            return DepotConfigStore;
         }
 
         public static void Save()
