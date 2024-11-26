@@ -59,7 +59,7 @@ namespace DepotDownloader
                 }
                 catch (IOException ex)
                 {
-                    Console.WriteLine("Failed to load account settings: {0}", ex.Message);
+                    Util.WriteLine("Failed to load account settings: {0}", ex.Message);
                     Instance = new AccountSettingsStore();
                 }
             }
@@ -84,7 +84,7 @@ namespace DepotDownloader
             }
             catch (IOException ex)
             {
-                Console.WriteLine("Failed to save account settings: {0}", ex.Message);
+                Util.WriteLine("Failed to save account settings: {0}", ex.Message);
             }
         }
     }

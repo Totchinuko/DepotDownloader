@@ -14,6 +14,14 @@ namespace DepotDownloader
 {
     public static class Util
     {
+        public static event Action<string> ConsoleWriteRedirect;
+
+        public static void Write(string line) => ConsoleWriteRedirect?.Invoke(line);
+        public static void Write(char line) => ConsoleWriteRedirect?.Invoke(line.ToString());
+        public static void Write(string line, params object[] args) => ConsoleWriteRedirect?.Invoke(string.Format(line, args));
+        public static void WriteLine(string line) => ConsoleWriteRedirect?.Invoke(line + Environment.NewLine);
+        public static void WriteLine(string line, params object[] args) => ConsoleWriteRedirect?.Invoke(string.Format(line, args) + Environment.NewLine);
+
         public static string GetSteamOS()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -59,7 +67,7 @@ namespace DepotDownloader
                     if (password.Length > 0)
                     {
                         password.Remove(password.Length - 1, 1);
-                        Console.Write("\b \b");
+                        Util.Write("\b \b");
                     }
 
                     continue;
@@ -70,7 +78,7 @@ namespace DepotDownloader
                 if (c >= ' ' && c <= '~')
                 {
                     password.Append(c);
-                    Console.Write('*');
+                    Util.Write('*');
                 }
             } while (keyInfo.Key != ConsoleKey.Enter);
 
