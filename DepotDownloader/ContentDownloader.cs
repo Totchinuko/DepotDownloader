@@ -376,7 +376,7 @@ namespace DepotDownloader
             File.Move(fileStagingPath, fileFinalPath);
         }
 
-        public static async Task DownloadAppAsync(uint appId, List<(uint depotId, ulong manifestId)> depotManifestIds, string branch, string os, string arch, string language, bool lv, bool isUgc)
+        public static async Task DownloadAppAsync(uint appId, List<(uint depotId, ulong manifestId)> depotManifestIds, string branch, string os, string arch, string language, bool lv, bool isUgc, CancellationTokenSource cts = null)
         {
             cdnPool = new CDNClientPool(steam3, appId);
 
@@ -512,7 +512,7 @@ namespace DepotDownloader
 
             try
             {
-                await DownloadSteam3Async(infos).ConfigureAwait(false);
+                await DownloadSteam3Async(infos, cts).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
