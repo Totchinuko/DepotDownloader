@@ -88,9 +88,6 @@ namespace DepotDownloader
             this.callbacks.Subscribe<SteamClient.DisconnectedCallback>(DisconnectedCallback);
             this.callbacks.Subscribe<SteamUser.LoggedOnCallback>(LogOnCallback);
             this.callbacks.Subscribe<SteamApps.LicenseListCallback>(LicenseListCallback);
-
-            Util.Write("Connecting to Steam3...");
-            Connect();
         }
 
         public delegate bool WaitCondition();
