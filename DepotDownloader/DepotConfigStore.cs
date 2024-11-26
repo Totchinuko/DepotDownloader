@@ -35,7 +35,7 @@ namespace DepotDownloader
         public static void LoadFromFile(string filename)
         {
             if (Instance != null)
-                throw new Exception("Config already loaded");
+                return;
             Instance = LoadInstanceFromFile(filename);
         }
 
