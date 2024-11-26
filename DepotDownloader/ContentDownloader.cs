@@ -373,7 +373,7 @@ namespace DepotDownloader
 
         public static async Task DownloadAppAsync(uint appId, List<(uint depotId, ulong manifestId)> depotManifestIds, string branch, string os, string arch, string language, bool lv, bool isUgc, CancellationTokenSource cts = null)
         {
-            cdnPool = new CDNClientPool(steam3, appId);
+            cdnPool = new CDNClientPool(steam3, [appId]);
 
             // Load our configuration data containing the depots currently installed
             var configPath = Config.InstallDirectory;

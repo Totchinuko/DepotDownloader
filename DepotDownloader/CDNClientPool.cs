@@ -19,7 +19,7 @@ namespace DepotDownloader
         private const int ServerEndpointMinimumSize = 8;
 
         private readonly Steam3Session steamSession;
-        private readonly uint appId;
+        private readonly List<uint> appIds;
         public Client CDNClient { get; }
         public Server ProxyServer { get; private set; }
 
@@ -31,10 +31,10 @@ namespace DepotDownloader
         private readonly CancellationTokenSource shutdownToken = new();
         public CancellationTokenSource ExhaustedToken { get; set; }
 
-        public CDNClientPool(Steam3Session steamSession, uint appId)
+        public CDNClientPool(Steam3Session steamSession, List<uint> appIds)
         {
             this.steamSession = steamSession;
-            this.appId = appId;
+            this.appIds = appIds;
             CDNClient = new Client(steamSession.steamClient);
 
             monitorTask = Task.Factory.StartNew(ConnectionPoolMonitorAsync).Unwrap();
@@ -88,7 +88,7 @@ namespace DepotDownloader
                     var weightedCdnServers = servers
                         .Where(server =>
                         {
-                            var isEligibleForApp = server.AllowedAppIds.Length == 0 || server.AllowedAppIds.Contains(appId);
+                            var isEligibleForApp = server.AllowedAppIds.Length == 0 || server.AllowedAppIds.Intersect(appIds).Count() == appIds.Count;
                             return isEligibleForApp && (server.Type == "SteamCache" || server.Type == "CDN");
                         })
                         .Select(server =>
