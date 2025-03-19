@@ -95,7 +95,11 @@ namespace DepotDownloader
             return false;
         }
 
-        public static async Task<bool> AccountHasAccess(uint depotId)
+<<<<<<< HEAD
+        public static bool AccountHasAccess(uint depotId)
+=======
+        static async Task<bool> AccountHasAccess(uint depotId)
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
         {
             if (steam3 == null || steam3.steamUser.SteamID == null || (steam3.Licenses == null && steam3.steamUser.SteamID.AccountType != EAccountType.AnonUser))
                 return false;
@@ -173,7 +177,11 @@ namespace DepotDownloader
             return uint.Parse(buildid.Value);
         }
 
-        public static async Task<ulong> GetSteam3DepotManifest(uint depotId, uint appId, string branch)
+<<<<<<< HEAD
+        public static ulong GetSteam3DepotManifest(uint depotId, uint appId, string branch)
+=======
+        static async Task<ulong> GetSteam3DepotManifest(uint depotId, uint appId, string branch)
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
         {
             var depots = GetSteam3AppSection(appId, EAppInfoSection.Depots);
             var depotChild = depots[depotId.ToString()];
@@ -283,9 +291,19 @@ namespace DepotDownloader
                 }
             );
 
+<<<<<<< HEAD
             return steam3;
+=======
+            if (!steam3.WaitForCredentials())
+            {
+                Console.WriteLine("Unable to get steam3 credentials.");
+                return false;
+            }
+
             Task.Run(steam3.TickCallbacks);
 
+            return true;
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
         }
 
         public static void ShutdownSteam3()

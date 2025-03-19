@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+<<<<<<< HEAD
     <TargetFramework>net8.0</TargetFramework>
+=======
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <RollForward>LatestMajor</RollForward>
     <Version>2.7.3</Version>
@@ -9,6 +14,7 @@
     <Copyright>Copyright © SteamRE Team 2024</Copyright>
     <Deterministic>true</Deterministic>
     <TreatWarningsAsErrors Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TreatWarningsAsErrors>
+    <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -22,7 +28,17 @@
   </ItemGroup>
 
   <ItemGroup>
+<<<<<<< HEAD
     <PackageReference Include="protobuf-net" Version="3.2.30" />
     <PackageReference Include="SteamKit2" Version="3.0.0-Beta.4" />
+=======
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.106">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="protobuf-net" Version="3.2.45" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="SteamKit2" Version="3.0.0" />
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
   </ItemGroup>
 </Project>

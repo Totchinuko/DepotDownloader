@@ -148,8 +148,16 @@ namespace DepotDownloader
 
             if (appTokens.AppTokensDenied.Contains(appId))
             {
+<<<<<<< HEAD
+                completed = true;
+                if (appTokens.AppTokensDenied.Contains(appId))
+                {
                     Util.WriteLine("Insufficient privileges to get access token for app {0}", appId);
+                }
+=======
+                Console.WriteLine("Insufficient privileges to get access token for app {0}", appId);
             }
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
 
             foreach (var token_dict in appTokens.AppTokens)
             {
@@ -235,13 +243,18 @@ namespace DepotDownloader
 
             var depotKey = await steamApps.GetDepotDecryptionKey(depotId, appid);
 
-                Util.WriteLine("Got depot key for {0} result: {1}", depotKey.DepotID, depotKey.Result);
+            Console.WriteLine("Got depot key for {0} result: {1}", depotKey.DepotID, depotKey.Result);
 
             if (depotKey.Result != EResult.OK)
             {
+<<<<<<< HEAD
+                completed = true;
+                Util.WriteLine("Got depot key for {0} result: {1}", depotKey.DepotID, depotKey.Result);
+=======
                 Abort();
                 return;
             }
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
 
             DepotKeys[depotKey.DepotID] = depotKey.DepotKey;
         }
@@ -289,12 +302,29 @@ namespace DepotDownloader
         {
             var appPassword = await steamApps.CheckAppBetaPassword(appid, password);
 
-                Util.WriteLine("Retrieved {0} beta keys with result: {1}", appPassword.BetaPasswords.Count, appPassword.Result);
+            Console.WriteLine("Retrieved {0} beta keys with result: {1}", appPassword.BetaPasswords.Count, appPassword.Result);
 
             foreach (var entry in appPassword.BetaPasswords)
             {
+<<<<<<< HEAD
+                completed = true;
+
+                Util.WriteLine("Retrieved {0} beta keys with result: {1}", appPassword.BetaPasswords.Count, appPassword.Result);
+
+                foreach (var entry in appPassword.BetaPasswords)
+                {
+                    AppBetaPasswords[entry.Key] = entry.Value;
+                }
+            };
+
+            WaitUntilCallback(() =>
+            {
+                callbacks.Subscribe(steamApps.CheckAppBetaPassword(appid, password), cbMethod);
+            }, () => { return completed; });
+=======
                 AppBetaPasswords[entry.Key] = entry.Value;
             }
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
         }
 
         public async Task<PublishedFileDetails> GetPublishedFileDetails(uint appId, PublishedFileID pubFile)
@@ -382,6 +412,22 @@ namespace DepotDownloader
             steamClient.Disconnect();
         }
 
+<<<<<<< HEAD
+        private void WaitForCallbacks()
+        {
+            callbacks.RunWaitCallbacks(TimeSpan.FromSeconds(1));
+
+            var diff = DateTime.Now - connectTime;
+
+            if (diff > STEAM3_TIMEOUT && !bConnected)
+            {
+                Util.WriteLine("Timeout connecting to Steam3.");
+                Abort();
+            }
+        }
+
+=======
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
         private async void ConnectedCallback(SteamClient.ConnectedCallback connected)
         {
             Util.WriteLine(" Done!");
@@ -498,7 +544,11 @@ namespace DepotDownloader
 
                 if (bConnecting)
                 {
+<<<<<<< HEAD
                     Util.WriteLine("Connection to Steam failed. Trying again");
+=======
+                    Console.WriteLine($"Connection to Steam failed. Trying again (#{connectionBackoff})...");
+>>>>>>> 4539666214b43738ed3964a03d1f91e60675f949
                 }
                 else
                 {
