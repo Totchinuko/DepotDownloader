@@ -148,7 +148,7 @@ namespace DepotDownloader
 
             if (appTokens.AppTokensDenied.Contains(appId))
             {
-                    Util.WriteLine("Insufficient privileges to get access token for app {0}", appId);
+                Util.WriteLine("Insufficient privileges to get access token for app {0}", appId);
             }
 
             foreach (var token_dict in appTokens.AppTokens)
@@ -235,7 +235,7 @@ namespace DepotDownloader
 
             var depotKey = await steamApps.GetDepotDecryptionKey(depotId, appid);
 
-                Util.WriteLine("Got depot key for {0} result: {1}", depotKey.DepotID, depotKey.Result);
+            Util.WriteLine("Got depot key for {0} result: {1}", depotKey.DepotID, depotKey.Result);
 
             if (depotKey.Result != EResult.OK)
             {
@@ -289,7 +289,7 @@ namespace DepotDownloader
         {
             var appPassword = await steamApps.CheckAppBetaPassword(appid, password);
 
-                Util.WriteLine("Retrieved {0} beta keys with result: {1}", appPassword.BetaPasswords.Count, appPassword.Result);
+            Util.WriteLine("Retrieved {0} beta keys with result: {1}", appPassword.BetaPasswords.Count, appPassword.Result);
 
             foreach (var entry in appPassword.BetaPasswords)
             {
@@ -576,36 +576,19 @@ namespace DepotDownloader
         }
 
         #region Trebuchet Additions
-        public List<PublishedFileDetails> GetPublishedFileDetails(uint appId, IEnumerable<ulong> pubFiles)
+        public async Task<List<PublishedFileDetails>> GetPublishedFileDetails(uint appId, IEnumerable<ulong> pubFiles)
         {
             var pubFileRequest = new CPublishedFile_GetDetails_Request { appid = appId };
             pubFileRequest.publishedfileids.AddRange(pubFiles);
             if (pubFileRequest.publishedfileids.Count == 0)
                 return new List<PublishedFileDetails>();
 
-            var completed = false;
-            var detailsList = new List<PublishedFileDetails>();
-
-            Action<SteamUnifiedMessages.ServiceMethodResponse> cbMethod = callback =>
+            var details = await steamPublishedFile.GetDetails(pubFileRequest);
+            if (details.Result == EResult.OK)
             {
-                completed = true;
-                if (callback.Result == EResult.OK)
-                {
-                    var response = callback.GetDeserializedResponse<CPublishedFile_GetDetails_Response>();
-                    detailsList.AddRange(response.publishedfiledetails);
-                }
-                else
-                {
-                    throw new Exception($"EResult {(int)callback.Result} ({callback.Result}) while retrieving file details for pubfiles ({string.Join(",", pubFiles)}).");
-                }
-            };
-
-            WaitUntilCallback(() =>
-            {
-                callbacks.Subscribe(steamPublishedFile.SendMessage(api => api.GetDetails(pubFileRequest)), cbMethod);
-            }, () => { return completed; });
-
-            return detailsList;
+                return details.Body.publishedfiledetails;
+            }
+            throw new Exception($"EResult {(int)details.Result} ({details.Result}) while retrieving file details for pubfile ({string.Join(",", pubFiles)}).");
         }
         #endregion
     }

@@ -284,8 +284,6 @@ namespace DepotDownloader
             );
 
             return steam3;
-            Task.Run(steam3.TickCallbacks);
-
         }
 
         public static void ShutdownSteam3()
@@ -1416,15 +1414,15 @@ namespace DepotDownloader
 
             foreach (var appId in apps)
             {
-                steam3.RequestAppInfo(appId);
-                if (!AccountHasAccess(appId))
+                await steam3.RequestAppInfo(appId);
+                if (!await AccountHasAccess(appId))
                 {
-                    if (steam3.RequestFreeAppLicense(appId))
+                    if (await steam3.RequestFreeAppLicense(appId))
                     {
                         Util.Write("Obtained FreeOnDemand license for app {0}", appId);
 
                         // Fetch app info again in case we didn't get it fully without a license.
-                        steam3.RequestAppInfo(appId, true);
+                        await steam3.RequestAppInfo(appId, true);
                     }
                     else
                     {
@@ -1433,7 +1431,7 @@ namespace DepotDownloader
                     }
                 }
 
-                list.AddRange(steam3.GetPublishedFileDetails(appId, publishedFiles));
+                list.AddRange(await steam3.GetPublishedFileDetails(appId, publishedFiles));
             }
 
             if (list.Count == 0) return;
@@ -1457,8 +1455,10 @@ namespace DepotDownloader
             {
                 if (!CreateUGCDirectories(consumer_appid, publishedfileid, out var installDir))
                     throw new Exception("Unable to create install directories!");
-                if (TryGetDepotInfo(consumer_appid, consumer_appid, hcontent_file, publishedfileid, branch, installDir, out var info))
-                    infos.Add(info);
+                var depotInfo = await TryGetDepotInfo(consumer_appid, consumer_appid, hcontent_file, publishedfileid, branch,
+                    installDir);
+                if (depotInfo is not null)
+                    infos.Add(depotInfo);
             }
 
             try
@@ -1495,44 +1495,42 @@ namespace DepotDownloader
             return true;
         }
 
-        private static bool TryGetDepotInfo(uint depotId, uint appId, ulong manifestId, ulong publishedFileId, string branch, string installDir, out DepotDownloadInfo info)
+        private static async Task<DepotDownloadInfo> TryGetDepotInfo(uint depotId, uint appId, ulong manifestId, ulong publishedFileId, string branch, string installDir)
         {
             if (appId != INVALID_APP_ID)
-                steam3.RequestAppInfo(appId);
+                await steam3.RequestAppInfo(appId);
 
-            info = null;
-            if (!AccountHasAccess(depotId))
+            if (!await AccountHasAccess(depotId))
             {
                 Util.Write("Depot not available from this account.");
-                return false;
+                return null;
             }
 
             if (manifestId == INVALID_MANIFEST_ID)
             {
-                manifestId = GetSteam3DepotManifest(depotId, appId, branch);
+                manifestId = await GetSteam3DepotManifest(depotId, appId, branch);
                 if (manifestId == INVALID_MANIFEST_ID && !string.Equals(branch, DEFAULT_BRANCH, StringComparison.OrdinalIgnoreCase))
                 {
                     Util.Write("Depot {0} does not have branch named \"{1}\". Trying {2} branch.", depotId, branch, DEFAULT_BRANCH);
                     branch = DEFAULT_BRANCH;
-                    manifestId = GetSteam3DepotManifest(depotId, appId, branch);
+                    manifestId = await GetSteam3DepotManifest(depotId, appId, branch);
                 }
 
                 if (manifestId == INVALID_MANIFEST_ID)
                 {
                     Util.Write("Depot {0} missing public subsection or manifest section.", depotId);
-                    return false;
+                    return null;
                 }
             }
 
-            steam3.RequestDepotKey(depotId, appId);
+            await steam3.RequestDepotKey(depotId, appId);
             if (!steam3.DepotKeys.TryGetValue(depotId, out var depotKey))
             {
                 Util.Write("No valid depot key for {0}, unable to download.", depotId);
-                return false;
+                return null;
             }
 
-            info = new DepotDownloadInfo(depotId, appId, manifestId, branch, installDir, depotKey, publishedFileId);
-            return true;
+            return new DepotDownloadInfo(depotId, appId, manifestId, branch, installDir, depotKey, publishedFileId);
         }
         #endregion
     }
