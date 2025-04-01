@@ -1343,7 +1343,7 @@ namespace DepotDownloader
                 downloadCounter.totalBytesUncompressed += chunk.UncompressedLength;
 
                 //TODO: Ansi.Progress(downloadCounter.totalBytesUncompressed, downloadCounter.completeDownloadSize);
-                Config.Progress.Report(Math.Round(downloadCounter.totalBytesUncompressed / (double)downloadCounter.completeDownloadSize * 100.0));
+                Config.Progress.Report(downloadCounter.totalBytesUncompressed / (double)downloadCounter.completeDownloadSize);
             }
 
             if (remainingChunks == 0)
