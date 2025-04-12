@@ -575,6 +575,35 @@ namespace DepotDownloader
         }
 
         #region Trebuchet Additions
+
+        public async Task<IEnumerable<PublishedFileDetails>> GetPublishedFileDetailsComplete(IEnumerable<uint> apps,
+            IEnumerable<ulong> pubFiles)
+        {
+            var list = new List<SteamKit2.Internal.PublishedFileDetails>();
+            foreach (var appId in apps)
+            {
+                await RequestAppInfo(appId);
+                if (!await ContentDownloader.AccountHasAccess(appId))
+                {
+                    if (await RequestFreeAppLicense(appId))
+                    {
+                        Util.Write("Obtained FreeOnDemand license for app {0}", appId);
+
+                        // Fetch app info again in case we didn't get it fully without a license.
+                        await RequestAppInfo(appId, true);
+                    }
+                    else
+                    {
+                        var contentName = ContentDownloader.GetAppName(appId);
+                        throw new ContentDownloaderException($"App {appId} ({contentName}) is not available from this account.");
+                    }
+                }
+
+                list.AddRange(await GetPublishedFileDetails(appId, pubFiles));
+            }
+
+            return list.Where(x => x.hcontent_file > 0).GroupBy(x => x.publishedfileid).Select(y => y.First());
+        }
         public async Task<List<PublishedFileDetails>> GetPublishedFileDetails(uint appId, IEnumerable<ulong> pubFiles)
         {
             var pubFileRequest = new CPublishedFile_GetDetails_Request { appid = appId };
@@ -590,7 +619,7 @@ namespace DepotDownloader
             throw new Exception($"EResult {(int)details.Result} ({details.Result}) while retrieving file details for pubfile ({string.Join(",", pubFiles)}).");
         }
 
-        public async Task<IEnumerable<PublishedFileDetails>> QueryPublishedFileSearch(uint appId, string searchTerms, uint perPage, uint page)
+        public async Task<CPublishedFile_QueryFiles_Response> QueryPublishedFileSearch(uint appId, string searchTerms, uint perPage, uint page)
         {
             var queryRequest = new CPublishedFile_QueryFiles_Request();
             queryRequest.appid = appId;
@@ -606,7 +635,7 @@ namespace DepotDownloader
             var details = await steamPublishedFile.QueryFiles(queryRequest);
             if (details.Result == EResult.OK)
             {
-                return details.Body.publishedfiledetails;
+                return details.Body;
             }
             throw new Exception($"EResult {(int)details.Result} ({details.Result}) while retrieving query for pubfile ({appId}: {searchTerms}).");
         }
