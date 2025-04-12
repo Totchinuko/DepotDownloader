@@ -312,7 +312,6 @@ namespace DepotDownloader
             throw new Exception($"EResult {(int)details.Result} ({details.Result}) while retrieving file details for pubfile {pubFile}.");
         }
 
-
         public async Task<SteamCloud.UGCDetailsCallback> GetUGCDetails(UGCHandle ugcHandle)
         {
             var callback = await steamCloud.RequestUGCDetails(ugcHandle);
@@ -589,6 +588,27 @@ namespace DepotDownloader
                 return details.Body.publishedfiledetails;
             }
             throw new Exception($"EResult {(int)details.Result} ({details.Result}) while retrieving file details for pubfile ({string.Join(",", pubFiles)}).");
+        }
+
+        public async Task<IEnumerable<PublishedFileDetails>> QueryPublishedFileSearch(uint appId, string searchTerms, uint perPage, uint page)
+        {
+            var queryRequest = new CPublishedFile_QueryFiles_Request();
+            queryRequest.appid = appId;
+            queryRequest.page = page;
+            queryRequest.filetype = 18;
+            queryRequest.numperpage = perPage;
+            queryRequest.search_text = searchTerms;
+            queryRequest.strip_description_bbcode = true;
+            queryRequest.return_details = true;
+            queryRequest.return_vote_data = true;
+            queryRequest.return_short_description = true;
+            queryRequest.query_type = (uint)SteamKit2.EPublishedFileQueryType.RankedByTextSearch;
+            var details = await steamPublishedFile.QueryFiles(queryRequest);
+            if (details.Result == EResult.OK)
+            {
+                return details.Body.publishedfiledetails;
+            }
+            throw new Exception($"EResult {(int)details.Result} ({details.Result}) while retrieving query for pubfile ({appId}: {searchTerms}).");
         }
         #endregion
     }
