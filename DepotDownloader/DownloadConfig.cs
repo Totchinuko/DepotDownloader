@@ -33,6 +33,6 @@ namespace DepotDownloader
         // A Steam LoginID to allow multiple concurrent connections
         public uint? LoginID { get; set; }
 
-        public IProgress<double> Progress { get; set; }
+        public IProgress<Progress> Progress { get; set; }
     }
 }

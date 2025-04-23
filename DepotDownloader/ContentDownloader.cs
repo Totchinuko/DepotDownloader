@@ -606,7 +606,7 @@ namespace DepotDownloader
         private static async Task DownloadSteam3Async(List<DepotDownloadInfo> depots, CancellationTokenSource providedCTS = null)
         {
             //TODO: Progress intermediate
-            Config.Progress.Report(0.0);
+            Config.Progress.Report(Progress.Empty);
             CancellationTokenSource cts;
             if (providedCTS != null)
                 cts = providedCTS;
@@ -653,8 +653,7 @@ namespace DepotDownloader
                 await DownloadSteam3AsyncDepotFiles(cts, downloadCounter, depotFileData, allFileNamesAllDepots);
             }
 
-            //TODO: Progress Hidden
-            Config.Progress.Report(1.0);
+            Config.Progress.Report(new Progress(downloadCounter.totalBytesUncompressed, downloadCounter.totalBytesUncompressed, 0L));
             Util.WriteLine("Total downloaded: {0} bytes ({1} bytes uncompressed) from {2} depots",
                 downloadCounter.totalBytesCompressed, downloadCounter.totalBytesUncompressed, depots.Count);
         }
@@ -1335,6 +1334,8 @@ namespace DepotDownloader
                 depotDownloadCounter.sizeDownloaded = sizeDownloaded;
                 depotDownloadCounter.depotBytesCompressed += chunk.CompressedLength;
                 depotDownloadCounter.depotBytesUncompressed += chunk.UncompressedLength;
+
+                Config.Progress.Report(new Progress(depotDownloadCounter.sizeDownloaded, depotDownloadCounter.completeDownloadSize, depotFilesData.depotDownloadInfo.PublishedFileId));
             }
 
             lock (downloadCounter)
@@ -1342,8 +1343,7 @@ namespace DepotDownloader
                 downloadCounter.totalBytesCompressed += chunk.CompressedLength;
                 downloadCounter.totalBytesUncompressed += chunk.UncompressedLength;
 
-                //TODO: Ansi.Progress(downloadCounter.totalBytesUncompressed, downloadCounter.completeDownloadSize);
-                Config.Progress.Report(downloadCounter.totalBytesUncompressed / (double)downloadCounter.completeDownloadSize);
+                Config.Progress.Report(new Progress(downloadCounter.totalBytesUncompressed, downloadCounter.completeDownloadSize, 0L));
             }
 
             if (remainingChunks == 0)
