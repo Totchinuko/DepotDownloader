@@ -638,13 +638,19 @@ namespace DepotDownloader
             if (!string.IsNullOrWhiteSpace(Config.InstallDirectory) && depotsToDownload.Count > 0)
             {
                 var claimedFileNames = new HashSet<string>();
+                string publishedIdSubFolder;
 
                 for (var i = depotsToDownload.Count - 1; i >= 0; i--)
                 {
+                    // Files in PublishedId sub folders can have the same name, this add discrimination
+                    if (depotsToDownload[i].depotDownloadInfo.PublishedFileId != 0)
+                        publishedIdSubFolder = depotsToDownload[i].depotDownloadInfo.PublishedFileId + "/";
+                    else
+                        publishedIdSubFolder = string.Empty;
                     // For each depot, remove all files from the list that have been claimed by a later depot
-                    depotsToDownload[i].filteredFiles.RemoveAll(file => claimedFileNames.Contains(file.FileName));
+                    depotsToDownload[i].filteredFiles.RemoveAll(file => claimedFileNames.Contains(publishedIdSubFolder + file.FileName));
 
-                    claimedFileNames.UnionWith(depotsToDownload[i].allFileNames);
+                    claimedFileNames.UnionWith(depotsToDownload[i].allFileNames.Select(x => publishedIdSubFolder + x));
                 }
             }
 
