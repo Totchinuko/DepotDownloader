@@ -1341,7 +1341,7 @@ namespace DepotDownloader
                 depotDownloadCounter.depotBytesCompressed += chunk.CompressedLength;
                 depotDownloadCounter.depotBytesUncompressed += chunk.UncompressedLength;
 
-                if(depotFilesData.depotDownloadInfo.PublishedFileId > 0)
+                if (depotFilesData.depotDownloadInfo.PublishedFileId > 0)
                     Config.Progress.Report(new Progress(depotDownloadCounter.sizeDownloaded, depotDownloadCounter.completeDownloadSize, depotFilesData.depotDownloadInfo.PublishedFileId));
             }
 
