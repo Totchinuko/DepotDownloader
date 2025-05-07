@@ -18,6 +18,7 @@ namespace DepotDownloader
     public class Steam3Session
     {
         public bool IsLoggedOn { get; private set; }
+        public bool IsConnecting { get; private set; }
 
         public ReadOnlyCollection<SteamApps.LicenseListCallback.License> Licenses
         {
@@ -337,13 +338,17 @@ namespace DepotDownloader
 
         public async Task<bool> Connect()
         {
-            bAborted = false;
-            bConnecting = true;
-            connectionBackoff = 0;
-            authSession = null;
+            if (!IsConnecting)
+            {
+                bAborted = false;
+                bConnecting = true;
+                IsConnecting = true;
+                connectionBackoff = 0;
+                authSession = null;
 
-            ResetConnectionFlags();
-            this.steamClient.Connect();
+                ResetConnectionFlags();
+                this.steamClient.Connect();
+            }
 
             return await Task.Run(() => WaitForCredentials());
         }
@@ -482,12 +487,14 @@ namespace DepotDownloader
                 Util.WriteLine("Disconnected from Steam");
 
                 // Any operations outstanding need to be aborted
+                IsLoggedOn = false;
                 Disconnected?.Invoke(this, EventArgs.Empty);
                 bAborted = true;
             }
             else if (connectionBackoff >= 10)
             {
                 Util.WriteLine("Could not connect to Steam after 10 tries");
+                IsLoggedOn = false;
                 Disconnected?.Invoke(this, EventArgs.Empty);
                 Abort(false);
             }
@@ -543,6 +550,7 @@ namespace DepotDownloader
 
             this.seq++;
             IsLoggedOn = true;
+            IsConnecting = false;
             Connected?.Invoke(this, EventArgs.Empty);
 
             if (ContentDownloader.Config.CellID == 0)
