@@ -25,7 +25,6 @@ namespace DepotDownloader
 
         public bool VerifyAll { get; set; }
 
-        public int MaxServers { get; set; }
         public int MaxDownloads { get; set; }
 
         public bool RememberPassword { get; set; }
@@ -34,5 +33,6 @@ namespace DepotDownloader
         public uint? LoginID { get; set; }
 
         public IProgress<Progress> Progress { get; set; }
+        public bool SkipAppConfirmation { get; set; }
     }
 }

@@ -3,10 +3,10 @@
     <TargetFramework>net9.0</TargetFramework>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <RollForward>LatestMajor</RollForward>
-    <Version>2.7.3</Version>
+    <Version>3.4.0</Version>
     <Description>Steam Downloading Utility</Description>
     <Authors>SteamRE Team</Authors>
-    <Copyright>Copyright © SteamRE Team 2024</Copyright>
+    <Copyright>Copyright © SteamRE Team 2025</Copyright>
     <Deterministic>true</Deterministic>
     <TreatWarningsAsErrors Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TreatWarningsAsErrors>
     <InvariantGlobalization>true</InvariantGlobalization>
@@ -23,6 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="protobuf-net" Version="3.2.52" />
+    <PackageReference Include="SteamKit2" Version="3.3.0" />
     <PackageReference Include="protobuf-net" Version="3.2.45" />
     <PackageReference Include="SteamKit2" Version="3.0.0" />
   </ItemGroup>
