@@ -643,7 +643,6 @@ namespace DepotDownloader
             else
                 cts = new CancellationTokenSource();
 
-            cdnPool.ExhaustedToken = cts;
             await cdnPool.UpdateServerList();
 
             var downloadCounter = new GlobalDownloadCounter();
@@ -1411,7 +1410,7 @@ namespace DepotDownloader
             foreach (var appId in apps)
             {
                 await steam3.RequestAppInfo(appId);
-                if (!await AccountHasAccess(appId))
+                if (!await AccountHasAccess(appId, appId))
                 {
                     if (await steam3.RequestFreeAppLicense(appId))
                     {
@@ -1496,7 +1495,7 @@ namespace DepotDownloader
             if (appId != INVALID_APP_ID)
                 await steam3.RequestAppInfo(appId);
 
-            if (!await AccountHasAccess(depotId))
+            if (!await AccountHasAccess(appId, depotId))
             {
                 Util.Write("Depot not available from this account.");
                 return null;

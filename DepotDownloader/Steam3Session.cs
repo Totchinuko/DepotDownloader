@@ -428,91 +428,8 @@ namespace DepotDownloader
             // e.g. if the authentication phase takes a while and therefore multiple connections.
             connectionBackoff = 0;
 
-            if (!authenticatedUser)
-            {
-                Util.Write("Logging anonymously into Steam3...");
-                steamUser.LogOnAnonymous();
-            }
-            else
-            {
-                if (logonDetails.Username != null)
-                {
-                    Util.WriteLine("Logging '{0}' into Steam3...", logonDetails.Username);
-                }
-
-                if (authSession is null)
-                {
-                    if (logonDetails.Username != null && logonDetails.Password != null && logonDetails.AccessToken is null)
-                    {
-                        try
-                        {
-                            _ = AccountSettingsStore.Instance.GuardData.TryGetValue(logonDetails.Username, out var guarddata);
-                            authSession = await steamClient.Authentication.BeginAuthSessionViaCredentialsAsync(new AuthSessionDetails
-                            {
-                                DeviceFriendlyName = nameof(DepotDownloader),
-                                Username = logonDetails.Username,
-                                Password = logonDetails.Password,
-                                IsPersistentSession = ContentDownloader.Config.RememberPassword,
-                                GuardData = guarddata,
-                                Authenticator = new ConsoleAuthenticator(),
-                            });
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            return;
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.Error.WriteLine("Failed to authenticate with Steam: " + ex.Message);
-                            Abort(false);
-                            return;
-                        }
-                    }
-                }
-
-                if (authSession != null)
-                {
-                    try
-                    {
-                        var result = await authSession.PollingWaitForResultAsync();
-
-                        logonDetails.Username = result.AccountName;
-                        logonDetails.Password = null;
-                        logonDetails.AccessToken = result.RefreshToken;
-
-                        if (result.NewGuardData != null)
-                        {
-                            AccountSettingsStore.Instance.GuardData[result.AccountName] = result.NewGuardData;
-
-                            if (ContentDownloader.Config.UseQrCode)
-                            {
-                                Console.WriteLine($"Success! Next time you can login with -username {result.AccountName} -remember-password instead of -qr.");
-                            }
-                        }
-                        else
-                        {
-                            AccountSettingsStore.Instance.GuardData.Remove(result.AccountName);
-                        }
-
-                        AccountSettingsStore.Instance.LoginTokens[result.AccountName] = result.RefreshToken;
-                        AccountSettingsStore.Save();
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine("Failed to authenticate with Steam: " + ex.Message);
-                        Abort(false);
-                        return;
-                    }
-
-                    authSession = null;
-                }
-
-                steamUser.LogOn(logonDetails);
-            }
+            Util.Write("Logging anonymously into Steam3...");
+            steamUser.LogOnAnonymous();
         }
 
         private void DisconnectedCallback(SteamClient.DisconnectedCallback disconnected)
@@ -631,7 +548,7 @@ namespace DepotDownloader
             foreach (var appId in apps)
             {
                 await RequestAppInfo(appId);
-                if (!await ContentDownloader.AccountHasAccess(appId))
+                if (!await ContentDownloader.AccountHasAccess(appId, appId))
                 {
                     if (await RequestFreeAppLicense(appId))
                     {

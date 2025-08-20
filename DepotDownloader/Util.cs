@@ -20,7 +20,7 @@ namespace DepotDownloader
         public static void Write(string line) => ConsoleWriteRedirect?.Invoke(line);
         public static void Write(char line) => ConsoleWriteRedirect?.Invoke(line.ToString());
         public static void Write(string line, params object[] args) => ConsoleWriteRedirect?.Invoke(string.Format(line, args));
-        public static void WriteLine(string line) => ConsoleWriteRedirect?.Invoke(line + Environment.NewLine);
+        public static void WriteLine(string line = "") => ConsoleWriteRedirect?.Invoke(line + Environment.NewLine);
         public static void WriteLine(string line, params object[] args) => ConsoleWriteRedirect?.Invoke(string.Format(line, args) + Environment.NewLine);
 
         public static string GetSteamOS()

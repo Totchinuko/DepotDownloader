@@ -25,7 +25,5 @@
   <ItemGroup>
     <PackageReference Include="protobuf-net" Version="3.2.52" />
     <PackageReference Include="SteamKit2" Version="3.3.0" />
-    <PackageReference Include="protobuf-net" Version="3.2.45" />
-    <PackageReference Include="SteamKit2" Version="3.0.0" />
   </ItemGroup>
 </Project>
