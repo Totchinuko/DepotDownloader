@@ -285,7 +285,7 @@ namespace DepotDownloader
             return info["name"].AsString();
         }
 
-        public static Steam3Session InitializeSteam3(string username, string password)
+        public static Steam3Session InitializeSteam3(string username, string password, uint cellId = 0)
         {
             string loginToken = null;
 
@@ -302,7 +302,7 @@ namespace DepotDownloader
                     ShouldRememberPassword = Config.RememberPassword,
                     AccessToken = loginToken,
                     LoginID = Config.LoginID ?? 0x534B32, // "SK2"
-                }
+                },cellId
             );
 
             return steam3;

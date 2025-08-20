@@ -60,7 +60,7 @@ namespace DepotDownloader
         // input
         readonly SteamUser.LogOnDetails logonDetails;
 
-        public Steam3Session(SteamUser.LogOnDetails details)
+        public Steam3Session(SteamUser.LogOnDetails details, uint cellId = 0)
         {
             this.logonDetails = details;
             this.authenticatedUser = details.Username != null;
@@ -68,6 +68,7 @@ namespace DepotDownloader
             var clientConfiguration = SteamConfiguration.Create(config =>
                 config
                     .WithHttpClientFactory(static purpose => HttpClientFactory.CreateHttpClient())
+                    .WithCellID(cellId)
             );
 
             this.steamClient = new SteamClient(clientConfiguration);
@@ -515,6 +516,8 @@ namespace DepotDownloader
                 Util.WriteLine("Using Steam3 suggested CellID: " + loggedOn.CellID);
                 ContentDownloader.Config.CellID = (int)loggedOn.CellID;
             }
+            else
+                Util.WriteLine("Using Steam3 CellID: " + loggedOn.CellID);
         }
 
         private void LicenseListCallback(SteamApps.LicenseListCallback licenseList)
